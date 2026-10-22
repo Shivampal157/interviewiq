@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"os"
+	"path/filepath"
 
 	"interviewiq/internal/config"
 	"interviewiq/internal/db"
@@ -11,6 +13,19 @@ import (
 	"interviewiq/internal/httpx"
 	"interviewiq/internal/realtime"
 )
+
+// spaHandler serves the built React app and falls back to index.html for client-side routes.
+func spaHandler(dir string) http.HandlerFunc {
+	files := http.FileServer(http.Dir(dir))
+	return func(w http.ResponseWriter, r *http.Request) {
+		p := filepath.Join(dir, filepath.Clean("/"+r.URL.Path))
+		if st, err := os.Stat(p); err != nil || st.IsDir() {
+			http.ServeFile(w, r, filepath.Join(dir, "index.html"))
+			return
+		}
+		files.ServeHTTP(w, r)
+	}
+}
 
 func main() {
 	cfg := config.Load()
@@ -34,6 +49,7 @@ func main() {
 	mux.HandleFunc("GET /api/interview/get-interview", auth(api.MyInterviews))
 	mux.HandleFunc("GET /api/interview/report/{id}", auth(api.InterviewReport))
 
+	mux.HandleFunc("GET /api/payment/key", auth(api.PaymentKey))
 	mux.HandleFunc("POST /api/payment/order", auth(api.CreateOrder))
 	mux.HandleFunc("POST /api/payment/verify", auth(api.VerifyPayment))
 
@@ -50,6 +66,11 @@ func main() {
 		w.Header().Set("Content-Type", "application/json")
 		_ = json.NewEncoder(w).Encode(map[string]any{"ok": true, "engine": "go"})
 	})
+
+	if st, err := os.Stat("static"); err == nil && st.IsDir() {
+		mux.HandleFunc("GET /", spaHandler("static"))
+		log.Println("Serving frontend from ./static")
+	}
 
 	addr := ":" + cfg.Port
 	log.Printf("Server running on port %s (Go)", cfg.Port)

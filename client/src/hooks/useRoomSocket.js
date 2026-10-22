@@ -1,5 +1,6 @@
 export function connectRoomSocket(serverUrl) {
-  const url = serverUrl.replace(/^http/, "ws") + "/ws";
+  const base = serverUrl || window.location.origin;
+  const url = base.replace(/^http/, "ws") + "/ws";
   const ws = new WebSocket(url);
   const listeners = new Map();
   const queue = [];

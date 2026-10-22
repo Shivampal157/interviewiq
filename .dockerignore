@@ -1,0 +1,11 @@
+.git
+.gitignore
+.gocache
+**/node_modules
+**/dist
+**/*.exe
+**/.env
+**/.env.local
+server/
+docker-compose.yml
+start.ps1

@@ -9,11 +9,11 @@ dist/
 .gocache/
 *.exe
 interviewiq.exe
-3.interviewIQ/
 server/public/*
 !server/public/.gitkeep
 client/dist/
 uploads/
 .vscode/
 *.pdf
-go/pkg/
+server-go/static/
+static/

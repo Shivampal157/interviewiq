@@ -467,18 +467,25 @@ func (a *API) InterviewReport(c *httpx.C) {
 	})
 }
 
-func (a *API) CreateOrder(c *httpx.C) {
-	var body struct {
-		PlanID  string  `json:"planId"`
-		Amount  float64 `json:"amount"`
-		Credits int     `json:"credits"`
-	}
-	_ = c.BindJSON(&body)
-	if body.Amount == 0 || body.Credits == 0 {
-		c.JSON(http.StatusBadRequest, map[string]any{"message": "Invalid plan data"})
+func (a *API) PaymentKey(c *httpx.C) {
+	if !services.RazorpayConfigured(a.Cfg.RazorpayKey, a.Cfg.RazorpaySecret) {
+		c.JSON(http.StatusServiceUnavailable, map[string]any{"message": "Razorpay is not configured"})
 		return
 	}
-	order, err := services.CreateRazorpayOrder(a.Cfg.RazorpayKey, a.Cfg.RazorpaySecret, int(body.Amount*100), fmt.Sprintf("receipt_%d", time.Now().UnixMilli()))
+	c.JSON(http.StatusOK, map[string]any{"key": a.Cfg.RazorpayKey})
+}
+
+func (a *API) CreateOrder(c *httpx.C) {
+	var body struct {
+		PlanID string `json:"planId"`
+	}
+	_ = c.BindJSON(&body)
+	plan, ok := services.PlanByID(body.PlanID)
+	if !ok {
+		c.JSON(http.StatusBadRequest, map[string]any{"message": "Invalid plan"})
+		return
+	}
+	order, err := services.CreateRazorpayOrder(a.Cfg.RazorpayKey, a.Cfg.RazorpaySecret, int(plan.Amount*100), fmt.Sprintf("receipt_%d", time.Now().UnixMilli()))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, map[string]any{"message": "failed to create Razorpay order " + err.Error()})
 		return
@@ -488,7 +495,7 @@ func (a *API) CreateOrder(c *httpx.C) {
 	now := time.Now()
 	id, _ := order["id"].(string)
 	_, _ = a.Payments.InsertOne(cx, models.Payment{
-		ID: primitive.NewObjectID(), UserID: c.UserID, PlanID: body.PlanID, Amount: body.Amount, Credits: body.Credits,
+		ID: primitive.NewObjectID(), UserID: c.UserID, PlanID: plan.ID, Amount: plan.Amount, Credits: plan.Credits,
 		RazorpayOrderID: id, Status: "created", CreatedAt: now, UpdatedAt: now,
 	})
 	c.JSON(http.StatusOK, order)
@@ -501,10 +508,14 @@ func (a *API) VerifyPayment(c *httpx.C) {
 		Signature string `json:"razorpay_signature"`
 	}
 	_ = c.BindJSON(&body)
+	if !services.RazorpayConfigured(a.Cfg.RazorpayKey, a.Cfg.RazorpaySecret) || body.OrderID == "" || body.PaymentID == "" || body.Signature == "" {
+		c.JSON(http.StatusBadRequest, map[string]any{"message": "Invalid payment signature"})
+		return
+	}
 	mac := hmac.New(sha256.New, []byte(a.Cfg.RazorpaySecret))
 	_, _ = mac.Write([]byte(body.OrderID + "|" + body.PaymentID))
 	expected := hex.EncodeToString(mac.Sum(nil))
-	if expected != body.Signature {
+	if !hmac.Equal([]byte(expected), []byte(body.Signature)) {
 		c.JSON(http.StatusBadRequest, map[string]any{"message": "Invalid payment signature"})
 		return
 	}

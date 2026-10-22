@@ -10,6 +10,7 @@ function Pricing() {
   const navigate = useNavigate()
   const [selectedPlan, setSelectedPlan] = useState("free");
   const [loadingPlan, setLoadingPlan] = useState(null);
+  const [payError, setPayError] = useState("");
   const dispatch = useDispatch()
 
   const plans = [
@@ -60,48 +61,46 @@ function Pricing() {
 
   const handlePayment = async (plan) => {
     try {
+      setPayError("")
       setLoadingPlan(plan.id)
 
-      const amount =  
-      plan.id === "basic" ? 100 :
-      plan.id === "pro" ? 500 : 0;
-
-      const result = await axios.post(ServerUrl + "/api/payment/order" , {
+      const keyRes = await axios.get(ServerUrl + "/api/payment/key", { withCredentials: true })
+      const result = await axios.post(ServerUrl + "/api/payment/order", {
         planId: plan.id,
-        amount: amount,
-        credits: plan.credits,
-      },{withCredentials:true})
-      
+      }, { withCredentials: true })
+
+      if (!window.Razorpay) {
+        setPayError("Razorpay checkout failed to load. Refresh and try again.")
+        setLoadingPlan(null)
+        return
+      }
 
       const options = {
-      key: import.meta.env.VITE_RAZORPAY_KEY_ID,
-      amount: result.data.amount,
-      currency: "INR",
-      name: "InterviewIQ.AI",
-      description: `${plan.name} - ${plan.credits} Credits`,
-      order_id: result.data.id,
-
-      handler:async function (response) {
-        const verifypay = await axios.post(ServerUrl + "/api/payment/verify" ,response , {withCredentials:true})
-        dispatch(setUserData(verifypay.data.user))
-
-          alert("Payment Successful 🎉 Credits Added!");
+        key: keyRes.data.key,
+        amount: result.data.amount,
+        currency: "INR",
+        name: "InterviewIQ",
+        description: `${plan.name} - ${plan.credits} Credits`,
+        order_id: result.data.id,
+        handler: async function (response) {
+          const verifypay = await axios.post(ServerUrl + "/api/payment/verify", response, { withCredentials: true })
+          dispatch(setUserData(verifypay.data.user))
+          alert("Payment successful. Credits added.")
           navigate("/")
-
-      },
-      theme:{
-        color: "#10b981",
-      },
-
+        },
+        theme: { color: "#10b981" },
       }
 
       const rzp = new window.Razorpay(options)
+      rzp.on("payment.failed", function (resp) {
+        setPayError(resp?.error?.description || "Payment failed")
+      })
       rzp.open()
-
-      setLoadingPlan(null);
+      setLoadingPlan(null)
     } catch (error) {
-     console.log(error)
-     setLoadingPlan(null);
+      const msg = error?.response?.data?.message || "Payment could not start. Add Razorpay keys in server/.env."
+      setPayError(msg)
+      setLoadingPlan(null)
     }
   }
 
@@ -123,6 +122,9 @@ function Pricing() {
           <p className="text-gray-500 mt-3 text-lg">
             Flexible pricing to match your interview preparation goals.
           </p>
+          {payError && (
+            <p className="text-red-600 mt-3 text-sm">{payError}</p>
+          )}
         </div>
       </div>
 

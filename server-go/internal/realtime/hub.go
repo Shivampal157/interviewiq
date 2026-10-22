@@ -51,7 +51,7 @@ func New(secret string, origin string, peers *mongo.Collection) *Hub {
 		up: websocket.Upgrader{
 			CheckOrigin: func(r *http.Request) bool {
 				o := r.Header.Get("Origin")
-				return o == "" || o == origin
+				return o == "" || o == origin || strings.TrimPrefix(strings.TrimPrefix(o, "https://"), "http://") == r.Host
 			},
 		},
 	}

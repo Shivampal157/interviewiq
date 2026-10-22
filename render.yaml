@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: interviewiq
+    runtime: docker
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      # set these in the Render dashboard (sync: false = not stored in git)
+      - key: MONGODB_URL
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: CLIENT_URL
+        sync: false # e.g. https://interviewiq.onrender.com
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: RAZORPAY_KEY_ID
+        sync: false
+      - key: RAZORPAY_KEY_SECRET
+        sync: false

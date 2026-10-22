@@ -2,6 +2,7 @@ package auth
 
 import (
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
@@ -63,7 +64,7 @@ func SetAuthCookie(w http.ResponseWriter, token string) {
 		MaxAge:   7 * 24 * 60 * 60,
 		HttpOnly: true,
 		SameSite: http.SameSiteLaxMode,
-		Secure:   false,
+		Secure:   strings.HasPrefix(os.Getenv("CLIENT_URL"), "https://"),
 	})
 }
 
