@@ -57,24 +57,35 @@ func parseCookieHeader(header, name string) string {
 }
 
 func SetAuthCookie(w http.ResponseWriter, token string) {
+	isHttps := strings.HasPrefix(os.Getenv("CLIENT_URL"), "https://")
+	sameSite := http.SameSiteLaxMode
+	if isHttps {
+		sameSite = http.SameSiteNoneMode
+	}
 	http.SetCookie(w, &http.Cookie{
 		Name:     "token",
 		Value:    token,
 		Path:     "/",
 		MaxAge:   7 * 24 * 60 * 60,
 		HttpOnly: true,
-		SameSite: http.SameSiteLaxMode,
-		Secure:   strings.HasPrefix(os.Getenv("CLIENT_URL"), "https://"),
+		SameSite: sameSite,
+		Secure:   isHttps,
 	})
 }
 
 func ClearAuthCookie(w http.ResponseWriter) {
+	isHttps := strings.HasPrefix(os.Getenv("CLIENT_URL"), "https://")
+	sameSite := http.SameSiteLaxMode
+	if isHttps {
+		sameSite = http.SameSiteNoneMode
+	}
 	http.SetCookie(w, &http.Cookie{
 		Name:     "token",
 		Value:    "",
 		Path:     "/",
 		MaxAge:   -1,
 		HttpOnly: true,
-		SameSite: http.SameSiteLaxMode,
+		SameSite: sameSite,
+		Secure:   isHttps,
 	})
 }
