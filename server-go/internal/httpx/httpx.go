@@ -6,6 +6,7 @@ import (
 	"mime/multipart"
 	"net/http"
 	"os"
+	"strings"
 
 	"interviewiq/internal/auth"
 
@@ -93,8 +94,18 @@ func WrapAuth(secret string, h func(*C)) http.HandlerFunc {
 }
 
 func CORS(origin string, next http.Handler) http.Handler {
+	origin = strings.TrimRight(origin, "/")
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", origin)
+		allow := origin
+		reqOrigin := strings.TrimRight(r.Header.Get("Origin"), "/")
+		if reqOrigin != "" {
+			originHost := strings.TrimPrefix(strings.TrimPrefix(reqOrigin, "https://"), "http://")
+			if strings.EqualFold(reqOrigin, origin) || strings.EqualFold(originHost, r.Host) {
+				allow = reqOrigin
+			}
+		}
+		w.Header().Set("Access-Control-Allow-Origin", allow)
+		w.Header().Set("Vary", "Origin")
 		w.Header().Set("Access-Control-Allow-Credentials", "true")
 		w.Header().Set("Access-Control-Allow-Headers", "Origin, Content-Type, Accept, Authorization")
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS")

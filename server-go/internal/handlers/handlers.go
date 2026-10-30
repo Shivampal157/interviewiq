@@ -84,12 +84,12 @@ func (a *API) GoogleAuth(c *httpx.C) {
 		c.JSON(http.StatusInternalServerError, map[string]any{"message": "Google auth error " + err.Error()})
 		return
 	}
-	auth.SetAuthCookie(c.W, token)
+	auth.SetAuthCookie(c.W, c.R, token)
 	c.JSON(http.StatusOK, user)
 }
 
 func (a *API) Logout(c *httpx.C) {
-	auth.ClearAuthCookie(c.W)
+	auth.ClearAuthCookie(c.W, c.R)
 	c.JSON(http.StatusOK, map[string]any{"message": "LogOut Successfully"})
 }
 

@@ -87,6 +87,13 @@ func runJavascript(code string) (string, error) {
 	return emptyOut(text), nil
 }
 
+func pythonBin() string {
+	if p, err := exec.LookPath("python3"); err == nil && p != "" {
+		return p
+	}
+	return "python"
+}
+
 func runPython(code, stdin string) (string, error) {
 	dir, err := os.MkdirTemp("", "iq-*")
 	if err != nil {
@@ -99,7 +106,7 @@ func runPython(code, stdin string) (string, error) {
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 8*time.Second)
 	defer cancel()
-	cmd := exec.CommandContext(ctx, "python", file)
+	cmd := exec.CommandContext(ctx, pythonBin(), file)
 	cmd.Dir = dir
 	cmd.Env = []string{"PYTHONIOENCODING=utf-8", "PYTHONUNBUFFERED=1", "PATH=" + os.Getenv("PATH")}
 	if stdin != "" {

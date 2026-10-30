@@ -18,6 +18,7 @@ RUN CGO_ENABLED=0 go build -ldflags="-s -w" -o /out/interviewiq .
 FROM alpine:3.20
 # node + python3 are needed by the in-room code runner (JS / Python)
 RUN apk add --no-cache nodejs python3 ca-certificates tzdata \
+    && ln -sf /usr/bin/python3 /usr/local/bin/python \
     && adduser -D -u 10001 app
 WORKDIR /app
 COPY --from=api /out/interviewiq ./interviewiq

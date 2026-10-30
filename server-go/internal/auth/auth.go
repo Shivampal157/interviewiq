@@ -56,12 +56,29 @@ func parseCookieHeader(header, name string) string {
 	return ""
 }
 
-func SetAuthCookie(w http.ResponseWriter, token string) {
-	isHttps := strings.HasPrefix(os.Getenv("CLIENT_URL"), "https://")
-	sameSite := http.SameSiteLaxMode
-	if isHttps {
-		sameSite = http.SameSiteNoneMode
+func cookieSecurity(r *http.Request) (http.SameSite, bool) {
+	isHTTPS := (r != nil && (r.TLS != nil || strings.EqualFold(r.Header.Get("X-Forwarded-Proto"), "https"))) ||
+		strings.HasPrefix(os.Getenv("CLIENT_URL"), "https://") ||
+		strings.HasPrefix(os.Getenv("RENDER_EXTERNAL_URL"), "https://") ||
+		os.Getenv("RAILWAY_PUBLIC_DOMAIN") != ""
+
+	isCrossOrigin := false
+	if r != nil {
+		reqOrigin := strings.TrimRight(r.Header.Get("Origin"), "/")
+		originHost := strings.TrimPrefix(strings.TrimPrefix(reqOrigin, "https://"), "http://")
+		if originHost != "" && !strings.EqualFold(originHost, r.Host) {
+			isCrossOrigin = true
+		}
 	}
+
+	if isCrossOrigin && isHTTPS {
+		return http.SameSiteNoneMode, true
+	}
+	return http.SameSiteLaxMode, isHTTPS
+}
+
+func SetAuthCookie(w http.ResponseWriter, r *http.Request, token string) {
+	sameSite, secure := cookieSecurity(r)
 	http.SetCookie(w, &http.Cookie{
 		Name:     "token",
 		Value:    token,
@@ -69,16 +86,12 @@ func SetAuthCookie(w http.ResponseWriter, token string) {
 		MaxAge:   7 * 24 * 60 * 60,
 		HttpOnly: true,
 		SameSite: sameSite,
-		Secure:   isHttps,
+		Secure:   secure,
 	})
 }
 
-func ClearAuthCookie(w http.ResponseWriter) {
-	isHttps := strings.HasPrefix(os.Getenv("CLIENT_URL"), "https://")
-	sameSite := http.SameSiteLaxMode
-	if isHttps {
-		sameSite = http.SameSiteNoneMode
-	}
+func ClearAuthCookie(w http.ResponseWriter, r *http.Request) {
+	sameSite, secure := cookieSecurity(r)
 	http.SetCookie(w, &http.Cookie{
 		Name:     "token",
 		Value:    "",
@@ -86,6 +99,6 @@ func ClearAuthCookie(w http.ResponseWriter) {
 		MaxAge:   -1,
 		HttpOnly: true,
 		SameSite: sameSite,
-		Secure:   isHttps,
+		Secure:   secure,
 	})
 }

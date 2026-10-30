@@ -51,7 +51,7 @@ function Auth({isModel = false}) {
             if (code === "auth/popup-closed-by-user") {
                 setErrorMsg("The Google window was closed. Click Continue with Google again.")
             } else if (code === "auth/unauthorized-domain") {
-                setErrorMsg("Add localhost as an authorized domain in Firebase Authentication → Settings.")
+                setErrorMsg(`Add ${window.location.hostname} as an authorized domain in Firebase Authentication → Settings.`)
             } else if (code === "auth/api-key-not-valid" || code === "auth/invalid-api-key") {
                 setErrorMsg("Firebase API key is invalid. Please check your config.")
             } else {
