@@ -17,3 +17,5 @@ uploads/
 *.pdf
 server-go/static/
 static/
+
+render-env-ready.txt
