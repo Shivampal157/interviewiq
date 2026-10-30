@@ -9,3 +9,4 @@
 server/
 docker-compose.yml
 start.ps1
+render-env-ready.txt
