@@ -4,20 +4,76 @@
 
 ### **Production-Grade AI Mock Interview & Real-Time Peer Collaborative Coding Platform**
 
+[![Live Demo](https://img.shields.io/badge/LIVE%20DEMO-interviewiq--tb6d.onrender.com-00C7B7?style=for-the-badge&logo=render&logoColor=white)](https://interviewiq-tb6d.onrender.com)
 [![Go Version](https://img.shields.io/badge/Go-1.23%2B-00ADD8?style=for-the-badge&logo=go&logoColor=white)](https://go.dev/)
 [![React Version](https://img.shields.io/badge/React-19.2-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
 [![Tailwind CSS](https://img.shields.io/badge/TailwindCSS-v4-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
-[![MongoDB](https://img.shields.io/badge/MongoDB-7.0-47A248?style=for-the-badge&logo=mongodb&logoColor=white)](https://www.mongodb.com/)
-[![WebSockets](https://img.shields.io/badge/WebSockets-Real--Time-010101?style=for-the-badge&logo=socketdotio&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API)
-[![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
-[![Railway](https://img.shields.io/badge/Deploy-Railway-0B0D0E?style=for-the-badge&logo=railway&logoColor=white)](https://railway.com/)
+[![MongoDB Atlas](https://img.shields.io/badge/MongoDB-Atlas%20Ready-47A248?style=for-the-badge&logo=mongodb&logoColor=white)](https://www.mongodb.com/atlas)
+[![Docker](https://img.shields.io/badge/Docker-Single--Container-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
 [![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
 
 <br/>
 
-**InterviewIQ** is an end-to-end, FAANG-caliber technical interview readiness suite. It pairs intelligent, dynamic LLM-driven mock interviews with a high-performance, real-time collaborative peer coding environment equipped with live WebRTC video, synchronized code editing, in-room multi-language sandbox execution, anti-cheat monitoring, and deep analytical performance reports.
+**[🌐 Visit Live Application](https://interviewiq-tb6d.onrender.com)** • **[📸 Visual Tour](#-visual-tour)** • **[🚀 Key Features](#-key-features)** • **[🏛 Architecture](#-system-architecture)** • **[⚡ Quick Start](#-quick-start)** • **[📡 API & WebSocket Reference](#-api--websocket-reference)**
 
-[Explore Features](#-key-features) • [System Architecture](#-system-architecture) • [Quick Start](#-quick-start) • [Deployment Guide](#-production-deployment) • [API Specs](#-api--websocket-reference)
+<br/>
+
+<a href="https://interviewiq-tb6d.onrender.com">
+  <img src="client/src/assets/img1.png" alt="InterviewIQ.AI Platform Preview" width="100%" style="border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.25);" />
+</a>
+
+<br/>
+
+**InterviewIQ** is an end-to-end, FAANG-caliber technical interview readiness platform. It pairs intelligent, dynamic LLM-driven mock interviews with a high-performance, real-time collaborative peer coding canvas equipped with live WebRTC video, synchronized code editing, in-room multi-language sandbox execution, anti-cheat monitoring, and deep analytical performance reports.
+
+</div>
+
+---
+
+## 📸 Visual Tour
+
+<div align="center">
+
+### 1. 🤖 AI Mock Interview Studio (Technical & Behavioral)
+*Resume-aware dynamic question generation with speech-to-text recording, live timer countdowns, and real-time response evaluation.*
+
+| Technical Role Assessment | HR & Behavioral Assessment |
+|:---:|:---:|
+| <img src="client/src/assets/tech.png" width="450" alt="Technical Interview Mode" /> | <img src="client/src/assets/HR.png" width="450" alt="HR Interview Mode" /> |
+
+<br/>
+
+### 2. 👥 Real-Time Peer Collaborative Coding Canvas
+*Sub-5ms synchronized typing, WebRTC peer-to-peer video/audio calling, instant code runner (JavaScript, Python, Java, C++), and anti-cheat tab-switch detection.*
+
+<img src="client/src/assets/MM.png" width="850" alt="Peer Collaborative Coding & Video Studio" style="border-radius: 8px;" />
+
+<br/>
+
+### 3. 📊 AI Evaluation & Real-Time Performance Feedback
+*Granular category scoring across Problem Solving, Technical Communication, Correctness, and Speech Confidence.*
+
+| AI Instant Scoring & Feedback | Multi-Factor Confidence Radar |
+|:---:|:---:|
+| <img src="client/src/assets/ai-ans.png" width="450" alt="AI Answer Scoring" /> | <img src="client/src/assets/confi.png" width="450" alt="Confidence & Metrics" /> |
+
+<br/>
+
+### 4. 📄 Deep Performance Dossier & 1-Click PDF Export
+*Historical analytical breakdown of every interview round with comprehensive feedback and exportable high-resolution PDF dossiers.*
+
+| Historical Performance Tracker | 1-Click Printable PDF Dossier |
+|:---:|:---:|
+| <img src="client/src/assets/history.png" width="450" alt="Interview History Dashboard" /> | <img src="client/src/assets/pdf.png" width="450" alt="PDF Scorecard Export" /> |
+
+<br/>
+
+### 5. 📑 PDF Resume Context & Credit Economy
+*Automated PDF resume text extraction to seed personalized interview questions, backed by a flexible credit bundle system.*
+
+| In-Browser Resume Ingestion | Interview Credits & Monetization |
+|:---:|:---:|
+| <img src="client/src/assets/resume.png" width="450" alt="Resume Parser" /> | <img src="client/src/assets/credit.png" width="450" alt="Credit System" /> |
 
 </div>
 
@@ -41,7 +97,7 @@
 ### ⚡ 3. Ultra-Fast Go Backend Architecture
 - **Sub-Millisecond Response Times**: Native Go standard library HTTP routing with lightweight concurrency primitives (`goroutines` + channels).
 - **Hardened Authentication**: Stateless JWT session tokens securely delivered via `HttpOnly`, `SameSite=Lax`, and SSL-enforced cookies.
-- **Resilient MongoDB Driver**: High-throughput indexing and connection pooling.
+- **Resilient MongoDB Driver**: Auto-reconnect pooling with non-blocking graceful fallback.
 
 ### 💳 4. Flexible Credits & Monetization
 - **Tier-Based Credit System**: Basic and Pro interview preparation bundles.
@@ -69,7 +125,7 @@ graph TD
     
     subgraph "External Cloud Services"
         APIRoutes -->|Prompts & Evaluation| OpenRouter["OpenRouter AI (LLM Engine)"]
-        APIRoutes -->|Data Persistence| MongoCluster[("MongoDB Database")]
+        APIRoutes -->|Data Persistence| MongoCluster[("MongoDB Atlas Database")]
         APIRoutes -->|Payment Validation| Razorpay["Razorpay Gateway"]
         User <-->|P2P Audio / Video| WebRTC["WebRTC Mesh Connection"]
         User -->|OAuth Sign-In| Firebase["Firebase Google Auth"]
@@ -82,12 +138,13 @@ graph TD
 
 | Domain | Technology | Description |
 |---|---|---|
+| **Live Production** | [Render](https://render.com) | Unified Docker web service (`https://interviewiq-tb6d.onrender.com`) |
 | **Frontend Framework** | React 19 (Vite) | High-speed component rendering, modern hooks, zero-lag UI |
 | **Styling** | TailwindCSS v4 | Modern responsive glassmorphism and theme engine |
 | **State Management** | Redux Toolkit | Predictable centralized application state |
 | **Real-Time Gateway** | WebSockets (Gorilla/Native) | Bidirectional room broadcast and peer synchronization |
 | **Backend API** | Go (Golang 1.23+) | High-concurrency, memory-safe compiled backend |
-| **Database** | MongoDB 7.0 | Document store for users, peer rooms, reports, and payments |
+| **Database** | MongoDB 7.0 / Atlas | Document store for users, peer rooms, reports, and payments |
 | **AI Engine** | OpenRouter (LLMs) | Dynamic question synthesis and multi-factor evaluation |
 | **Authentication** | Firebase Auth + JWT | Google OAuth + HttpOnly secure cookie sessions |
 | **Payments** | Razorpay API | Secure payment checkout and cryptographic verification |
@@ -100,8 +157,8 @@ graph TD
 ```text
 ├── client/                     # React 19 Frontend SPA (Vite + TailwindCSS v4)
 │   ├── src/
-│   │   ├── components/         # Reusable UI elements (Navbar, Modals, Editor)
-│   │   ├── hooks/              # Custom hooks (useRoomSocket, WebRTC handlers)
+│   │   ├── components/         # Reusable UI elements (Navbar, Modals, Editor, Timer)
+│   │   ├── hooks/              # Custom hooks (useRoomSocket, WebRTC handlers, useProctoring)
 │   │   ├── pages/              # Primary application routes
 │   │   │   ├── Home.jsx        # Landing page & feature showcase
 │   │   │   ├── Auth.jsx        # Google sign-in & onboarding
@@ -118,7 +175,7 @@ graph TD
 │   ├── internal/
 │   │   ├── auth/               # JWT creation, cookie dispatch, token parsing
 │   │   ├── config/             # Environment configuration loader
-│   │   ├── db/                 # MongoDB connection & index pool
+│   │   ├── db/                 # Resilient MongoDB Atlas connection & auto-retry pool
 │   │   ├── handlers/           # HTTP controllers (Auth, AI, Peer, Payment)
 │   │   ├── httpx/              # HTTP middleware, CORS, JSON context wrappers
 │   │   ├── models/             # Domain entities (User, Interview, Room, Payment)
@@ -131,6 +188,7 @@ graph TD
 ├── Dockerfile                  # Production multi-stage build (Client + Go API)
 ├── docker-compose.yml          # Local containerized MongoDB service
 ├── render.yaml                 # One-click Render Blueprint definition
+├── railway.json                # 1-Click Railway deployment configuration
 ├── start.ps1                   # One-click development bootstrap script
 └── README.md
 ```
@@ -209,59 +267,20 @@ Frontend will be running at **`http://localhost:5173`**.
 
 ## 🌐 Production Deployment
 
-### Strategy 1: Railway (Recommended — 1-Click MongoDB Included)
+### Live Deployment on Render (Current Production)
 
-1. Navigate to [railway.com](https://railway.com/) and click **"New Project"**.
-2. Select **"Deploy from GitHub repo"** and connect **`Shivampal157/interviewiq`**.
-3. In the canvas, click **"+ New"** -> **"Database"** -> **"Add MongoDB"**.
-4. In your `interviewiq` service **Variables** tab, set:
-   - `MONGODB_URL`: `${{MongoDB.MONGO_URL}}`
-   - `OPENROUTER_API_KEY`: `your-openrouter-api-key`
-   - `JWT_SECRET`: `your-strong-jwt-secret`
-   - `CLIENT_URL`: `https://${{RAILWAY_PUBLIC_DOMAIN}}`
-5. Under **Settings** -> **Networking**, click **"Generate Domain"**.
-6. Hit **Apply** — your production application is live!
+The repository is live at:  
+👉 **`https://interviewiq-tb6d.onrender.com`**
 
----
+To deploy your own instance using the included Blueprint:
 
-### Strategy 2: Render (Blueprint Automation)
-
-This repository includes a native [render.yaml](render.yaml) blueprint:
-
-1. Go to [dashboard.render.com](https://dashboard.render.com/) and click **"New +"** -> **"Blueprint"**.
-2. Select **`Shivampal157/interviewiq`**.
-3. Fill in your environment secrets (`MONGODB_URL`, `OPENROUTER_API_KEY`, `CLIENT_URL`).
-4. Click **Apply** to deploy the Docker container.
-
----
-
-### Strategy 3: Self-Hosted Docker Container
-
-To package and run the self-contained single image anywhere:
-
-```bash
-# Build the production image
-docker build -t interviewiq:latest .
-
-# Run container on port 8000
-docker run -d \
-  -p 8000:8000 \
-  -e PORT=8000 \
-  -e MONGODB_URL="mongodb+srv://user:pass@cluster.mongodb.net/interviewiq" \
-  -e JWT_SECRET="your-jwt-secret" \
-  -e OPENROUTER_API_KEY="your-openrouter-key" \
-  --name interviewiq \
-  interviewiq:latest
-```
-
----
-
-## 🔐 Google OAuth Configuration (Firebase)
-
-To enable Google Sign-In across your production URLs:
-1. Open the [Firebase Console](https://console.firebase.google.com/) -> Select **`interviewiq-3746a`**.
-2. Navigate to **Authentication** -> **Settings** tab -> **Authorized domains**.
-3. Click **Add Domain** and register your deployed domain (e.g., `your-app.up.railway.app` or `your-app.onrender.com`).
+1. Navigate to **[dashboard.render.com](https://dashboard.render.com/blueprint/new?repo=https://github.com/Shivampal157/interviewiq)**.
+2. Connect your GitHub repository (`Shivampal157/interviewiq`).
+3. Set your environment variables:
+   - `MONGODB_URL`: Your MongoDB Atlas connection string.
+   - `OPENROUTER_API_KEY`: Your OpenRouter API key.
+4. Click **Deploy Blueprint** — Render will build the unified multi-stage Docker container and go live in ~2 minutes.
+5. In **Firebase Console** -> **Authentication** -> **Settings** -> **Authorized domains**, add your `.onrender.com` domain.
 
 ---
 
@@ -285,7 +304,7 @@ To enable Google Sign-In across your production URLs:
 | `POST` | `/api/peer/{code}/run` | Execute code against sandbox runner (JS, Python, Java, C++) | ✅ |
 | `POST` | `/api/payment/order` | Initialize Razorpay payment order for credits | ✅ |
 | `POST` | `/api/payment/verify` | Cryptographically verify HMAC payment signature | ✅ |
-| `GET` | `/health` | Service health probe & engine verification | ❌ |
+| `GET` | `/health` | Service health probe & database connection status | ❌ |
 
 ### Real-Time WebSocket Protocol (`/ws`)
 
@@ -340,6 +359,6 @@ Distributed under the **MIT License**. See `LICENSE` for more information.
 
 Developed with ❤️ by **[Shivam Pal](https://github.com/Shivampal157)**
 
-⭐ If you found this project helpful, please consider giving it a star on GitHub!
+⭐ If you found this project helpful, please consider giving it a star on [GitHub](https://github.com/Shivampal157/interviewiq)!
 
 </div>
