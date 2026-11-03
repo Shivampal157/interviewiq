@@ -14,72 +14,57 @@
 
 <br/>
 
-**[🌐 Visit Live Application](https://interviewiq-tb6d.onrender.com)** • **[📸 Visual Tour](#-visual-tour)** • **[🚀 Key Features](#-key-features)** • **[🏛 Architecture](#-system-architecture)** • **[⚡ Quick Start](#-quick-start)** • **[📡 API & WebSocket Reference](#-api--websocket-reference)**
+**[🌐 Launch Live Application](https://interviewiq-tb6d.onrender.com)** • **[📸 Product Showcase](#-product-showcase)** • **[🚀 Key Capabilities](#-key-capabilities)** • **[🏛 System Architecture](#-system-architecture)** • **[⚡ Quick Start](#-quick-start)** • **[📡 API Specs](#-api--websocket-reference)**
 
 <br/>
 
 <a href="https://interviewiq-tb6d.onrender.com">
-  <img src="client/src/assets/img1.png" alt="InterviewIQ.AI Platform Preview" width="100%" style="border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.25);" />
+  <img src="docs/screenshots/hero-landing.png" alt="InterviewIQ Landing Page" width="100%" style="border-radius: 12px; box-shadow: 0 12px 35px rgba(0,0,0,0.18);" />
 </a>
 
 <br/>
 
-**InterviewIQ** is an end-to-end, FAANG-caliber technical interview readiness platform. It pairs intelligent, dynamic LLM-driven mock interviews with a high-performance, real-time collaborative peer coding canvas equipped with live WebRTC video, synchronized code editing, in-room multi-language sandbox execution, anti-cheat monitoring, and deep analytical performance reports.
+**InterviewIQ** is an end-to-end, FAANG-caliber interview readiness suite. It combines intelligent, dynamic LLM-driven mock interviews with live anti-cheat camera proctoring, multi-modal answer inputs (speech-to-text / text), real-time peer collaborative coding with WebRTC video, and comprehensive performance scorecards.
 
 </div>
 
 ---
 
-## 📸 Visual Tour
+## 📸 Product Showcase
 
 <div align="center">
 
-### 1. 🤖 AI Mock Interview Studio (Technical & Behavioral)
-*Resume-aware dynamic question generation with speech-to-text recording, live timer countdowns, and real-time response evaluation.*
+### 1. 🎯 Personalized Interview Setup & Resume Context
+*Customize target job role, experience level, and interview focus. Upload PDF resumes for automatic background and stack extraction.*
 
-| Technical Role Assessment | HR & Behavioral Assessment |
-|:---:|:---:|
-| <img src="client/src/assets/tech.png" width="450" alt="Technical Interview Mode" /> | <img src="client/src/assets/HR.png" width="450" alt="HR Interview Mode" /> |
+<img src="docs/screenshots/interview-setup.png" alt="Interview Setup Screen" width="90%" style="border-radius: 10px; box-shadow: 0 8px 25px rgba(0,0,0,0.12);" />
 
-<br/>
+<br/><br/>
 
-### 2. 👥 Real-Time Peer Collaborative Coding Canvas
-*Sub-5ms synchronized typing, WebRTC peer-to-peer video/audio calling, instant code runner (JavaScript, Python, Java, C++), and anti-cheat tab-switch detection.*
+### 2. 🤖 Live AI Mock Interview Studio with Real-Time Proctoring
+*Interactive AI interviewer avatar, live speech-to-text voice answer recording, per-question countdown timers, and in-browser camera anti-cheat integrity tracking (detecting tab switches, face presence, and window blur).*
 
-<img src="client/src/assets/MM.png" width="850" alt="Peer Collaborative Coding & Video Studio" style="border-radius: 8px;" />
+<img src="docs/screenshots/live-interview-anti-cheat.png" alt="Live AI Mock Interview Studio with Camera Proctoring" width="90%" style="border-radius: 10px; box-shadow: 0 8px 25px rgba(0,0,0,0.12);" />
 
-<br/>
+<br/><br/>
 
-### 3. 📊 AI Evaluation & Real-Time Performance Feedback
-*Granular category scoring across Problem Solving, Technical Communication, Correctness, and Speech Confidence.*
+### 3. ⚡ Advanced AI Capabilities
+*Dynamic question progression, multi-factor evaluation (Correctness, Technical Communication, Confidence), automated PDF scorecards, and historical progress tracking.*
 
-| AI Instant Scoring & Feedback | Multi-Factor Confidence Radar |
-|:---:|:---:|
-| <img src="client/src/assets/ai-ans.png" width="450" alt="AI Answer Scoring" /> | <img src="client/src/assets/confi.png" width="450" alt="Confidence & Metrics" /> |
+<img src="docs/screenshots/ai-capabilities.png" alt="Advanced AI Capabilities" width="90%" style="border-radius: 10px; box-shadow: 0 8px 25px rgba(0,0,0,0.12);" />
 
-<br/>
+<br/><br/>
 
-### 4. 📄 Deep Performance Dossier & 1-Click PDF Export
-*Historical analytical breakdown of every interview round with comprehensive feedback and exportable high-resolution PDF dossiers.*
+### 4. 🔥 Versatile Interview Modes
+*From Technical Deep-Dives to HR Behavioral evaluation, Tone & Confidence detection, and Peer Collaborative Coding rooms.*
 
-| Historical Performance Tracker | 1-Click Printable PDF Dossier |
-|:---:|:---:|
-| <img src="client/src/assets/history.png" width="450" alt="Interview History Dashboard" /> | <img src="client/src/assets/pdf.png" width="450" alt="PDF Scorecard Export" /> |
-
-<br/>
-
-### 5. 📑 PDF Resume Context & Credit Economy
-*Automated PDF resume text extraction to seed personalized interview questions, backed by a flexible credit bundle system.*
-
-| In-Browser Resume Ingestion | Interview Credits & Monetization |
-|:---:|:---:|
-| <img src="client/src/assets/resume.png" width="450" alt="Resume Parser" /> | <img src="client/src/assets/credit.png" width="450" alt="Credit System" /> |
+<img src="docs/screenshots/interview-modes.png" alt="Multiple Interview Modes" width="90%" style="border-radius: 10px; box-shadow: 0 8px 25px rgba(0,0,0,0.12);" />
 
 </div>
 
 ---
 
-## 🚀 Key Features
+## 🚀 Key Capabilities
 
 ### 🤖 1. AI Mock Interview Simulator
 - **Resume-Driven Context**: Upload PDF resumes to automatically extract technical background, project history, and tech stack proficiencies.
@@ -97,7 +82,7 @@
 ### ⚡ 3. Ultra-Fast Go Backend Architecture
 - **Sub-Millisecond Response Times**: Native Go standard library HTTP routing with lightweight concurrency primitives (`goroutines` + channels).
 - **Hardened Authentication**: Stateless JWT session tokens securely delivered via `HttpOnly`, `SameSite=Lax`, and SSL-enforced cookies.
-- **Resilient MongoDB Driver**: Auto-reconnect pooling with non-blocking graceful fallback.
+- **Resilient MongoDB Driver**: Auto-reconnecting connection pool with non-blocking graceful fallback.
 
 ### 💳 4. Flexible Credits & Monetization
 - **Tier-Based Credit System**: Basic and Pro interview preparation bundles.
@@ -155,6 +140,7 @@ graph TD
 ## 📁 Repository Structure
 
 ```text
+├── docs/screenshots/           # High-resolution production application previews
 ├── client/                     # React 19 Frontend SPA (Vite + TailwindCSS v4)
 │   ├── src/
 │   │   ├── components/         # Reusable UI elements (Navbar, Modals, Editor, Timer)
@@ -269,7 +255,7 @@ Frontend will be running at **`http://localhost:5173`**.
 
 ### Live Deployment on Render (Current Production)
 
-The repository is live at:  
+The application is deployed and live at:  
 👉 **`https://interviewiq-tb6d.onrender.com`**
 
 To deploy your own instance using the included Blueprint:
