@@ -160,7 +160,7 @@ func (c *Client) handle(env Envelope) {
 }
 
 func (c *Client) join(code string) {
-	if code == "" {
+	if code == "" || c.hub.peers == nil {
 		return
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 8*time.Second)
@@ -198,6 +198,9 @@ func (c *Client) forward(event string, payload json.RawMessage, excludeSelf bool
 }
 
 func (c *Client) saveChat(payload json.RawMessage) {
+	if c.hub.peers == nil {
+		return
+	}
 	var body struct {
 		Code       string `json:"code"`
 		Text       string `json:"text"`
@@ -234,6 +237,9 @@ func (c *Client) saveChat(payload json.RawMessage) {
 }
 
 func (c *Client) schedulePadSave(payload json.RawMessage) {
+	if c.hub.peers == nil {
+		return
+	}
 	var body struct {
 		Code     string `json:"code"`
 		Prompt   *string `json:"prompt"`

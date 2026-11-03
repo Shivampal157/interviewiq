@@ -34,14 +34,31 @@ type API struct {
 }
 
 func New(cfg config.Config, db *mongo.Database) *API {
-	return &API{
-		Cfg:        cfg,
-		DB:         db,
-		Users:      db.Collection("users"),
-		Interviews: db.Collection("interviews"),
-		Payments:   db.Collection("payments"),
-		Peers:      db.Collection("peerinterviews"),
+	api := &API{
+		Cfg: cfg,
+		DB:  db,
 	}
+	if db != nil {
+		api.Users = db.Collection("users")
+		api.Interviews = db.Collection("interviews")
+		api.Payments = db.Collection("payments")
+		api.Peers = db.Collection("peerinterviews")
+	}
+	return api
+}
+
+func (a *API) checkDB(c *httpx.C) bool {
+	if a.Users == nil && a.DB != nil {
+		a.Users = a.DB.Collection("users")
+		a.Interviews = a.DB.Collection("interviews")
+		a.Payments = a.DB.Collection("payments")
+		a.Peers = a.DB.Collection("peerinterviews")
+	}
+	if a.Users == nil {
+		c.JSON(http.StatusServiceUnavailable, map[string]any{"message": "Database is not connected. Please verify MONGODB_URL in your hosting settings."})
+		return false
+	}
+	return true
 }
 
 func ctx() (context.Context, context.CancelFunc) {
@@ -49,6 +66,9 @@ func ctx() (context.Context, context.CancelFunc) {
 }
 
 func (a *API) GoogleAuth(c *httpx.C) {
+	if !a.checkDB(c) {
+		return
+	}
 	var body struct {
 		Name  string `json:"name"`
 		Email string `json:"email"`
@@ -94,6 +114,9 @@ func (a *API) Logout(c *httpx.C) {
 }
 
 func (a *API) CurrentUser(c *httpx.C) {
+	if !a.checkDB(c) {
+		return
+	}
 	cx, cancel := ctx()
 	defer cancel()
 	var user models.User

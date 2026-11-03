@@ -29,9 +29,6 @@ func spaHandler(dir string) http.HandlerFunc {
 
 func main() {
 	cfg := config.Load()
-	if cfg.MongoURL == "" || cfg.JWTSecret == "" {
-		log.Fatal("MONGODB_URL and JWT_SECRET are required")
-	}
 	database := db.Connect(cfg.MongoURL)
 	api := handlers.New(cfg, database)
 	hub := realtime.New(cfg.JWTSecret, cfg.ClientURL, api.Peers)
@@ -64,7 +61,11 @@ func main() {
 	mux.HandleFunc("GET /ws", hub.Handle)
 	mux.HandleFunc("GET /health", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		_ = json.NewEncoder(w).Encode(map[string]any{"ok": true, "engine": "go"})
+		dbStatus := "connected"
+		if !db.Connected() {
+			dbStatus = "connecting_or_database_not_reachable"
+		}
+		_ = json.NewEncoder(w).Encode(map[string]any{"ok": true, "engine": "go", "database": dbStatus})
 	})
 
 	if st, err := os.Stat("static"); err == nil && st.IsDir() {

@@ -46,10 +46,15 @@ func Load() Config {
 			client = "http://localhost:5173"
 		}
 	}
+	jwtSecret := cleanEnv("JWT_SECRET")
+	if jwtSecret == "" {
+		jwtSecret = "interviewiq_production_jwt_fallback_secret_key_2026"
+	}
+
 	return Config{
 		Port:           port,
 		MongoURL:       cleanEnv("MONGODB_URL"),
-		JWTSecret:      cleanEnv("JWT_SECRET"),
+		JWTSecret:      jwtSecret,
 		ClientURL:      client,
 		OpenRouterKey:  cleanEnv("OPENROUTER_API_KEY"),
 		RazorpayKey:    cleanEnv("RAZORPAY_KEY_ID"),

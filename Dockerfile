@@ -7,7 +7,7 @@ COPY client/ ./
 RUN npm run build
 
 # ---- 2) build the Go API ----
-FROM golang:1.24-alpine AS api
+FROM golang:1.23-alpine AS api
 WORKDIR /src
 COPY server-go/go.mod server-go/go.sum ./
 RUN go mod download
