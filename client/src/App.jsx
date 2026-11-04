@@ -13,7 +13,7 @@ import InterviewReport from './pages/InterviewReport'
 import PeerInterviews from './pages/PeerInterviews'
 import PeerRoom from './pages/PeerRoom'
 
-export const ServerUrl  = import.meta.env.VITE_API_URL ?? (import.meta.env.DEV ? "http://localhost:8000" : "")
+export const ServerUrl = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? "http://localhost:8000" : "https://interviewiq-tb6d.onrender.com")
 
 function App() {
 
