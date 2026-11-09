@@ -100,7 +100,10 @@ func CORS(origin string, next http.Handler) http.Handler {
 		reqOrigin := strings.TrimRight(r.Header.Get("Origin"), "/")
 		if reqOrigin != "" {
 			originHost := strings.TrimPrefix(strings.TrimPrefix(reqOrigin, "https://"), "http://")
-			if strings.EqualFold(reqOrigin, origin) || strings.EqualFold(originHost, r.Host) {
+			if strings.EqualFold(reqOrigin, origin) ||
+				strings.EqualFold(originHost, r.Host) ||
+				strings.HasSuffix(originHost, ".vercel.app") ||
+				strings.HasPrefix(originHost, "localhost:") {
 				allow = reqOrigin
 			}
 		}
