@@ -52,12 +52,15 @@ func main() {
 	mux.HandleFunc("POST /api/payment/verify", auth(api.VerifyPayment))
 
 	mux.HandleFunc("POST /api/peer/create", auth(api.CreatePeer))
+	mux.HandleFunc("POST /api/peer/matchmake", auth(api.MatchmakePeer))
 	mux.HandleFunc("GET /api/peer/mine", auth(api.MyPeers))
 	mux.HandleFunc("GET /api/peer/{code}", auth(api.GetPeer))
 	mux.HandleFunc("POST /api/peer/{code}/join", auth(api.JoinPeer))
 	mux.HandleFunc("POST /api/peer/{code}/start", auth(api.StartPeer))
 	mux.HandleFunc("POST /api/peer/{code}/end", auth(api.EndPeer))
 	mux.HandleFunc("POST /api/peer/{code}/run", auth(api.RunPeer))
+	mux.HandleFunc("POST /api/peer/{code}/judge", auth(api.JudgePeer))
+	mux.HandleFunc("POST /api/peer/{code}/analyze", auth(api.AnalyzePeerCode))
 
 	mux.HandleFunc("GET /ws", hub.Handle)
 	mux.HandleFunc("GET /health", func(w http.ResponseWriter, r *http.Request) {

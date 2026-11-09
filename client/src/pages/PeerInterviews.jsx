@@ -16,6 +16,7 @@ function PeerInterviews() {
   const [mode, setMode] = useState("Technical");
   const [scheduledAt, setScheduledAt] = useState("");
   const [busy, setBusy] = useState(false);
+  const [matching, setMatching] = useState(false);
   const [error, setError] = useState("");
   const [copied, setCopied] = useState("");
 
@@ -54,6 +55,28 @@ function PeerInterviews() {
     }
   };
 
+  const autoMatch = async () => {
+    if (!userData) {
+      setShowAuth(true);
+      return;
+    }
+    setMatching(true);
+    setError("");
+    try {
+      const { data } = await axios.post(
+        ServerUrl + "/api/peer/matchmake",
+        { role, experience, mode },
+        { withCredentials: true }
+      );
+      await load();
+      navigate(`/peer/${data.inviteCode}`);
+    } catch (err) {
+      setError(err.response?.data?.message || "Could not auto-match right now");
+    } finally {
+      setMatching(false);
+    }
+  };
+
   const copyLink = async (code) => {
     const url = `${window.location.origin}/peer/${code}`;
     await navigator.clipboard.writeText(url);
@@ -68,7 +91,7 @@ function PeerInterviews() {
       <div className="mx-auto max-w-6xl px-4 py-10">
         <h1 className="text-3xl font-semibold">Live coding interview</h1>
         <p className="mt-2 text-gray-500">
-          FAANG-style CodePair room: shared editor, question panel, video, and Run. You are the candidate. Send the invite to a friend who interviews you.
+          FAANG-style CodePair room: shared editor, built-in DSA problem bank, parallel test-case judge, AI complexity analyzer, and live video.
         </p>
 
         <div className="mt-8 grid gap-6 md:grid-cols-2">
@@ -84,9 +107,19 @@ function PeerInterviews() {
               <input type="datetime-local" value={scheduledAt} onChange={(e) => setScheduledAt(e.target.value)} className="w-full rounded-xl border border-gray-200 px-4 py-3" />
               <p className="text-xs text-gray-400">Leave the time empty to start in 5 minutes and open the room now.</p>
               {error && <p className="text-sm text-red-600">{error}</p>}
-              <button disabled={busy} className="w-full rounded-full bg-green-600 py-3 font-semibold text-white disabled:bg-gray-400">
-                {busy ? "Creating..." : "Create & open room"}
-              </button>
+              <div className="flex flex-col sm:flex-row gap-3 pt-1">
+                <button type="submit" disabled={busy || matching} className="flex-1 rounded-full bg-green-600 py-3 font-semibold text-white hover:bg-green-700 disabled:bg-gray-400 cursor-pointer">
+                  {busy ? "Creating..." : "Create & open room"}
+                </button>
+                <button
+                  type="button"
+                  onClick={autoMatch}
+                  disabled={busy || matching}
+                  className="flex-1 rounded-full bg-black py-3 font-semibold text-white hover:bg-gray-800 disabled:bg-gray-400 cursor-pointer"
+                >
+                  {matching ? "Matching..." : "⚡ Instant Auto-Match"}
+                </button>
+              </div>
             </div>
           </form>
 

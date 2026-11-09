@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import AuthModel from "../components/AuthModel";
-import CodePad, { STARTERS } from "../components/CodePad";
+import CodePad, { STARTERS, FAANG_PROBLEMS } from "../components/CodePad";
 import { useProctoring } from "../hooks/useProctoring";
 import { connectRoomSocket } from "../hooks/useRoomSocket";
 import { ServerUrl } from "../App";
@@ -32,16 +32,19 @@ function PeerRoom() {
   const [remoteFlags, setRemoteFlags] = useState(null);
   const [leftTab, setLeftTab] = useState("problem");
   const [notes, setNotes] = useState("");
+  const [selectedProblemId, setSelectedProblemId] = useState("two-sum");
   const [prompt, setPrompt] = useState("");
   const [language, setLanguage] = useState("javascript");
   const [source, setSource] = useState("");
   const [output, setOutput] = useState("");
   const [stdin, setStdin] = useState("");
   const [running, setRunning] = useState(false);
+  const [judging, setJudging] = useState(false);
+  const [analyzing, setAnalyzing] = useState(false);
+  const [judgeResult, setJudgeResult] = useState(null);
+  const [aiAnalysis, setAiAnalysis] = useState(null);
   const [copied, setCopied] = useState(false);
   const [clock, setClock] = useState("00:00");
-  const [lamportVersion, setLamportVersion] = useState(1);
-  const [clusterNode, setClusterNode] = useState("node-local");
   const [inviteOpen, setInviteOpen] = useState(true);
   const bottomRef = useRef(null);
   const socketRef = useRef(null);
@@ -66,7 +69,7 @@ function PeerRoom() {
         const { data } = await axios.post(ServerUrl + `/api/peer/${code}/join`, {}, { withCredentials: true });
         setSession(data.session);
         setMyRole(data.myRole);
-        setPrompt(data.session.prompt || "");
+        setPrompt(data.session.prompt || FAANG_PROBLEMS[0].prompt);
         setLanguage(data.session.language || "javascript");
         setSource(data.session.code || STARTERS.javascript);
         setOutput(data.session.output || "");
@@ -126,11 +129,10 @@ function PeerRoom() {
       if (typeof pad.prompt === "string") setPrompt(pad.prompt);
       if (typeof pad.source === "string") setSource(pad.source);
       if (pad.language) setLanguage(pad.language);
-      if (pad.lamportVersion) setLamportVersion((prev) => Math.max(prev, Number(pad.lamportVersion) || 1));
-      if (pad.nodeId) setClusterNode(pad.nodeId);
     });
-    socket.on("pad-output", ({ output: next }) => {
+    socket.on("pad-output", ({ output: next, judgeResult: nextJudge }) => {
       if (typeof next === "string") setOutput(next);
+      if (nextJudge) setJudgeResult(nextJudge);
     });
 
     const pc = new RTCPeerConnection({ iceServers });
@@ -208,11 +210,7 @@ function PeerRoom() {
     }
     if (!socketRef.current) return undefined;
     const t = setTimeout(() => {
-      setLamportVersion((v) => {
-        const nextVer = v + 1;
-        socketRef.current?.emit("pad-update", { code, prompt, language, source, lamportVersion: nextVer });
-        return nextVer;
-      });
+      socketRef.current?.emit("pad-update", { code, prompt, language, source });
     }, 220);
     return () => clearTimeout(t);
   }, [prompt, language, source, code]);
@@ -243,9 +241,24 @@ function PeerRoom() {
     setText("");
   };
 
+  const selectProblem = (problemId) => {
+    setSelectedProblemId(problemId);
+    const found = FAANG_PROBLEMS.find((p) => p.id === problemId);
+    if (!found) return;
+    setPrompt(found.prompt);
+    const nextCode = found.starters?.[language] || found.starters?.javascript || STARTERS[language];
+    setSource(nextCode);
+    setJudgeResult(null);
+  };
+
   const changeLanguage = (next) => {
     setLanguage(next);
-    if (STARTERS[next]) setSource(STARTERS[next]);
+    const found = FAANG_PROBLEMS.find((p) => p.id === selectedProblemId);
+    if (found?.starters?.[next]) {
+      setSource(found.starters[next]);
+    } else if (STARTERS[next]) {
+      setSource(STARTERS[next]);
+    }
   };
 
   const runCode = async () => {
@@ -265,6 +278,47 @@ function PeerRoom() {
       setOutput(next);
     } finally {
       setRunning(false);
+    }
+  };
+
+  const judgeCode = async () => {
+    const found = FAANG_PROBLEMS.find((p) => p.id === selectedProblemId) || FAANG_PROBLEMS[0];
+    setJudging(true);
+    try {
+      const cases = (found.testCases || []).map((tc) => ({
+        name: tc.name,
+        input: tc.input,
+        expected: tc.expected,
+        harness: tc.harness?.[language] || "",
+      }));
+      const { data } = await axios.post(
+        ServerUrl + `/api/peer/${code}/judge`,
+        { language, code: source, testCases: cases },
+        { withCredentials: true, timeout: 30000 }
+      );
+      setJudgeResult(data);
+      const summary = `${data.verdict}: ${data.passedCount}/${data.totalCount} test cases passed (${data.totalTimeMs} ms)`;
+      socketRef.current?.emit("pad-output", { code, output: summary, judgeResult: data });
+    } catch (err) {
+      setOutput(err.response?.data?.message || "Test case runner failed");
+    } finally {
+      setJudging(false);
+    }
+  };
+
+  const analyzeCode = async () => {
+    setAnalyzing(true);
+    try {
+      const { data } = await axios.post(
+        ServerUrl + `/api/peer/${code}/analyze`,
+        { problem: prompt, language, code: source },
+        { withCredentials: true, timeout: 30000 }
+      );
+      setAiAnalysis(data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setAnalyzing(false);
     }
   };
 
@@ -314,13 +368,6 @@ function PeerRoom() {
           {session?.status || "…"}
         </span>
         <span className="font-mono text-zinc-300">{clock}</span>
-        <span
-          onClick={() => navigate("/system")}
-          title="Causal Lamport Logical Clock Version (Click to view Distributed Cluster Telemetry)"
-          className="hidden cursor-pointer rounded-full border border-cyan-500/30 bg-cyan-500/10 px-2.5 py-0.5 font-mono text-[10px] text-cyan-300 hover:bg-cyan-500/20 md:inline"
-        >
-          Lamport v{lamportVersion} · {clusterNode}
-        </span>
         <span className={`hidden rounded-full px-2 py-0.5 text-[10px] md:inline ${integrityCount ? "bg-red-500/15 text-red-300" : "bg-emerald-500/15 text-emerald-400"}`}>
           {integrityCount ? `${integrityCount} integrity flags` : "Secure session"}
         </span>
@@ -397,11 +444,19 @@ function PeerRoom() {
           output={output}
           stdin={stdin}
           running={running}
+          judging={judging}
+          analyzing={analyzing}
+          judgeResult={judgeResult}
+          aiAnalysis={aiAnalysis}
+          selectedProblemId={selectedProblemId}
+          onSelectProblem={selectProblem}
           disabled={ended}
           onLanguage={changeLanguage}
           onCode={setSource}
           onStdin={setStdin}
           onRun={runCode}
+          onJudge={judgeCode}
+          onAnalyze={analyzeCode}
         />
 
         <aside className="flex w-[240px] shrink-0 flex-col gap-2 border-l border-white/10 bg-[#161b22] p-2">
