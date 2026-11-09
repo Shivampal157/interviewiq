@@ -12,6 +12,8 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
+
+	"interviewiq/internal/distributed"
 )
 
 const maxOut = 12000
@@ -46,16 +48,29 @@ func ExecuteCode(language, code, stdin string) (string, error) {
 	if len(stdin) > 4000 {
 		stdin = stdin[:4000]
 	}
-	switch lang {
-	case "javascript":
-		return runJavascript(code)
-	case "python":
-		return runPython(code, stdin)
-	case "cpp":
-		return runGodbolt("g132", "c++", code, stdin, "-O2 -std=c++17")
-	default:
-		return runGodbolt("java2100", "java", code, stdin, "")
-	}
+	ctx, cancel := context.WithTimeout(context.Background(), 28*time.Second)
+	defer cancel()
+
+	return distributed.Default.WorkerPool.Submit(ctx, func() (string, error) {
+		switch lang {
+		case "javascript":
+			out, err := runJavascript(code)
+			if err == nil {
+				distributed.Default.ExecBreaker.RecordSuccess()
+			}
+			return out, err
+		case "python":
+			out, err := runPython(code, stdin)
+			if err == nil {
+				distributed.Default.ExecBreaker.RecordSuccess()
+			}
+			return out, err
+		case "cpp":
+			return runGodbolt("g132", "c++", code, stdin, "-O2 -std=c++17")
+		default:
+			return runGodbolt("java2100", "java", code, stdin, "")
+		}
+	})
 }
 
 func runJavascript(code string) (string, error) {
@@ -141,6 +156,9 @@ func joinLines(rows []ceLine) string {
 }
 
 func runGodbolt(compiler, lang, source, stdin, userArguments string) (string, error) {
+	if !distributed.Default.ExecBreaker.Allow() {
+		return "", errors.New("Remote compiler circuit breaker is OPEN due to upstream instability. Try JavaScript/Python or retry in 20s.")
+	}
 	payload := map[string]any{
 		"source": source,
 		"lang":   lang,
@@ -162,13 +180,16 @@ func runGodbolt(compiler, lang, source, stdin, userArguments string) (string, er
 	client := &http.Client{Timeout: 25 * time.Second}
 	res, err := client.Do(req)
 	if err != nil {
+		distributed.Default.ExecBreaker.RecordFailure()
 		return "", errors.New("C++ / Java runner is busy. Try JavaScript or Python, or click Run again.")
 	}
 	defer res.Body.Close()
 	raw, _ := io.ReadAll(res.Body)
 	if res.StatusCode >= 300 {
+		distributed.Default.ExecBreaker.RecordFailure()
 		return "", errors.New("C++ / Java runner is busy. Try JavaScript or Python, or click Run again.")
 	}
+	distributed.Default.ExecBreaker.RecordSuccess()
 	var data struct {
 		DidExecute  bool     `json:"didExecute"`
 		Stdout      []ceLine `json:"stdout"`

@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"interviewiq/internal/auth"
+	"interviewiq/internal/distributed"
 	"interviewiq/internal/models"
 
 	"github.com/gorilla/websocket"
@@ -42,7 +43,7 @@ type Hub struct {
 }
 
 func New(secret string, origin string, peers *mongo.Collection) *Hub {
-	return &Hub{
+	h := &Hub{
 		secret:  secret,
 		peers:   peers,
 		clients: map[*Client]bool{},
@@ -59,6 +60,10 @@ func New(secret string, origin string, peers *mongo.Collection) *Hub {
 			},
 		},
 	}
+	distributed.Default.PubSub.OnRelay(func(env distributed.ClusterEnvelope) {
+		h.broadcastLocal(env.Room, env.Event, env.Payload, nil)
+	})
+	return h
 }
 
 func (h *Hub) Handle(w http.ResponseWriter, r *http.Request) {
@@ -85,6 +90,7 @@ func (h *Hub) Handle(w http.ResponseWriter, r *http.Request) {
 	h.mu.Lock()
 	h.clients[client] = true
 	h.mu.Unlock()
+	distributed.Default.WSConnected(1)
 	go client.write()
 	client.read()
 }
@@ -194,6 +200,15 @@ func (c *Client) forward(event string, payload json.RawMessage, excludeSelf bool
 		body["from"] = c.id
 		body["userId"] = c.userID
 	}
+	if event == "pad-update" || event == "pad-output" || event == "session-status" {
+		var incomingVer uint64
+		if v, ok := body["lamportVersion"].(float64); ok && v > 0 {
+			incomingVer = uint64(v)
+		}
+		clk := distributed.Default.Lamport.Tick(code, incomingVer, distributed.Default.NodeID)
+		body["lamportVersion"] = clk.Version
+		body["nodeId"] = clk.LastNode
+	}
 	var skip *Client
 	if excludeSelf {
 		skip = c
@@ -289,6 +304,12 @@ func (h *Hub) broadcast(room, event string, payload any, skip *Client) {
 	if err != nil {
 		return
 	}
+	clk := distributed.Default.Lamport.Get(room)
+	distributed.Default.PubSub.Publish(room, event, payload, clk.Version)
+	h.broadcastLocal(room, event, raw, skip)
+}
+
+func (h *Hub) broadcastLocal(room, event string, raw json.RawMessage, skip *Client) {
 	out, _ := json.Marshal(Envelope{Event: event, Payload: raw})
 	h.mu.RLock()
 	defer h.mu.RUnlock()
@@ -314,4 +335,5 @@ func (h *Hub) remove(c *Client) {
 		delete(h.rooms[room], c)
 	}
 	close(c.send)
+	distributed.Default.WSConnected(-1)
 }

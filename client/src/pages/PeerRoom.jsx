@@ -40,6 +40,8 @@ function PeerRoom() {
   const [running, setRunning] = useState(false);
   const [copied, setCopied] = useState(false);
   const [clock, setClock] = useState("00:00");
+  const [lamportVersion, setLamportVersion] = useState(1);
+  const [clusterNode, setClusterNode] = useState("node-local");
   const [inviteOpen, setInviteOpen] = useState(true);
   const bottomRef = useRef(null);
   const socketRef = useRef(null);
@@ -124,6 +126,8 @@ function PeerRoom() {
       if (typeof pad.prompt === "string") setPrompt(pad.prompt);
       if (typeof pad.source === "string") setSource(pad.source);
       if (pad.language) setLanguage(pad.language);
+      if (pad.lamportVersion) setLamportVersion((prev) => Math.max(prev, Number(pad.lamportVersion) || 1));
+      if (pad.nodeId) setClusterNode(pad.nodeId);
     });
     socket.on("pad-output", ({ output: next }) => {
       if (typeof next === "string") setOutput(next);
@@ -204,7 +208,11 @@ function PeerRoom() {
     }
     if (!socketRef.current) return undefined;
     const t = setTimeout(() => {
-      socketRef.current?.emit("pad-update", { code, prompt, language, source });
+      setLamportVersion((v) => {
+        const nextVer = v + 1;
+        socketRef.current?.emit("pad-update", { code, prompt, language, source, lamportVersion: nextVer });
+        return nextVer;
+      });
     }, 220);
     return () => clearTimeout(t);
   }, [prompt, language, source, code]);
@@ -306,6 +314,13 @@ function PeerRoom() {
           {session?.status || "…"}
         </span>
         <span className="font-mono text-zinc-300">{clock}</span>
+        <span
+          onClick={() => navigate("/system")}
+          title="Causal Lamport Logical Clock Version (Click to view Distributed Cluster Telemetry)"
+          className="hidden cursor-pointer rounded-full border border-cyan-500/30 bg-cyan-500/10 px-2.5 py-0.5 font-mono text-[10px] text-cyan-300 hover:bg-cyan-500/20 md:inline"
+        >
+          Lamport v{lamportVersion} · {clusterNode}
+        </span>
         <span className={`hidden rounded-full px-2 py-0.5 text-[10px] md:inline ${integrityCount ? "bg-red-500/15 text-red-300" : "bg-emerald-500/15 text-emerald-400"}`}>
           {integrityCount ? `${integrityCount} integrity flags` : "Secure session"}
         </span>

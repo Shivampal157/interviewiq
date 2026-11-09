@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"strings"
 	"time"
+
+	"interviewiq/internal/distributed"
 )
 
 type ChatMessage struct {
@@ -19,6 +21,9 @@ func AskAI(apiKey string, messages []ChatMessage) string {
 		return ""
 	}
 	if len(messages) == 0 {
+		return ""
+	}
+	if !distributed.Default.LLMbreaker.Allow() {
 		return ""
 	}
 	body, _ := json.Marshal(map[string]any{
@@ -34,9 +39,14 @@ func AskAI(apiKey string, messages []ChatMessage) string {
 	client := &http.Client{Timeout: 45 * time.Second}
 	res, err := client.Do(req)
 	if err != nil {
+		distributed.Default.LLMbreaker.RecordFailure()
 		return ""
 	}
 	defer res.Body.Close()
+	if res.StatusCode >= 500 {
+		distributed.Default.LLMbreaker.RecordFailure()
+		return ""
+	}
 	raw, _ := io.ReadAll(res.Body)
 	var parsed struct {
 		Choices []struct {
@@ -46,8 +56,10 @@ func AskAI(apiKey string, messages []ChatMessage) string {
 		} `json:"choices"`
 	}
 	if err := json.Unmarshal(raw, &parsed); err != nil || len(parsed.Choices) == 0 {
+		distributed.Default.LLMbreaker.RecordFailure()
 		return ""
 	}
+	distributed.Default.LLMbreaker.RecordSuccess()
 	return strings.TrimSpace(parsed.Choices[0].Message.Content)
 }
 

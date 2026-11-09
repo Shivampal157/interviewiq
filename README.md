@@ -19,7 +19,7 @@
 
 <br/>
 
-**[📸 Product Showcase](#-product-showcase)** • **[🚀 Key Capabilities](#-key-capabilities)** • **[🏛 System Architecture](#-system-architecture)** • **[⚡ Quick Start](#-quick-start)** • **[📡 API Specs](#-api--websocket-reference)**
+**[📸 Product Showcase](#-product-showcase)** • **[🌐 Distributed Systems Engineering](#-distributed-systems-engineering-faang-highlights)** • **[🚀 Key Capabilities](#-key-capabilities)** • **[🏛 System Architecture](#-system-architecture)** • **[⚡ Quick Start](#-quick-start)** • **[📡 API Specs](#-api--websocket-reference)**
 
 <br/>
 
@@ -66,6 +66,23 @@
 <img src="docs/screenshots/interview-modes.png" alt="Multiple Interview Modes" width="90%" style="border-radius: 10px; box-shadow: 0 8px 25px rgba(0,0,0,0.12);" />
 
 </div>
+
+---
+
+## 🌐 Distributed Systems Engineering (FAANG Highlights)
+
+InterviewIQ includes a custom-built **Distributed Systems Control Plane** ([`server-go/internal/distributed/engine.go`](server-go/internal/distributed/engine.go)) and a live **Interactive Telemetry Console** ([`https://interviewiq-woad.vercel.app/system`](https://interviewiq-woad.vercel.app/system)) designed around production FAANG distributed systems primitives:
+
+| Distributed Subsystem | Engineering Implementation | Why It Matters at Scale |
+|---|---|---|
+| **1. Causal Lamport Logical Clocks** | Monotonic room vector/Lamport clocks (`L = max(L_local, L_incoming) + 1`) attached to every collaborative `pad-update` frame | Guarantees conflict-free causal ordering of live code edits across distributed peer interview rooms |
+| **2. 16-Shard Token-Bucket Rate Limiter** | FNV-1a hash-partitioned lock striping (`16` independent mutex shards, `120 RPM`, burst `40`) with `X-RateLimit-*` headers | Eliminates global mutex contention under high concurrency while protecting AI & compiler endpoints from abuse |
+| **3. 3-State Fault Circuit Breakers** | Automatic `CLOSED` → `OPEN` → `HALF_OPEN` state machines wrapping `openrouter-llm` and `sandbox-compiler` | Prevents cascading failures and thread exhaustion when downstream LLM or compiler APIs degrade |
+| **4. Bounded Sandbox Worker Pool** | Semaphore-bounded worker pool (`4` concurrent workers, `64` queue depth) with backpressure load-shedding | Isolates CPU-intensive multi-language code execution (`JS/Python/C++/Java`) from starving real-time WebSocket signaling |
+| **5. Multi-Node Pub/Sub Backplane** | Zero-dependency Redis RESP wire-protocol Pub/Sub (`interviewiq:cluster:bus`) with automatic fallback to an in-memory partitioned mesh | Enables horizontal WebSocket room broadcasting across multiple stateless Go server replicas |
+| **6. Lock-Free Ring Buffer Histogram & Prometheus Exporter** | 512-slot atomic circular latency buffer computing live `p50`, `p95`, and `p99` tail latencies + `/metrics` Prometheus endpoint | Provides zero-allocation observability and instant SLI/SLO telemetry (`X-Node-ID`, `X-Cluster-Region`) |
+
+> 🔥 **Try it live**: Open **[`https://interviewiq-woad.vercel.app/system`](https://interviewiq-woad.vercel.app/system)** and click **"Run 16x Stress Benchmark"** to dispatch 16 concurrent goroutines across the bounded worker pool and watch the Lamport clocks, throughput (`req/s`), and `p50`/`p95`/`p99` histograms update in real time!
 
 ---
 
@@ -295,10 +312,13 @@ To configure Google Sign-In for your deployment:
 | `GET` | `/api/interview/report/{id}` | Retrieve specific detailed interview scorecard | ✅ |
 | `POST` | `/api/peer/create` | Create a synchronized peer interview room | ✅ |
 | `GET` | `/api/peer/{code}` | Retrieve room metadata & active participant status | ✅ |
-| `POST` | `/api/peer/{code}/run` | Execute code against sandbox runner (JS, Python, Java, C++) | ✅ |
+| `POST` | `/api/peer/{code}/run` | Execute code against bounded sandbox worker pool (JS, Python, Java, C++) | ✅ |
 | `POST` | `/api/payment/order` | Initialize Razorpay payment order for credits | ✅ |
 | `POST` | `/api/payment/verify` | Cryptographically verify HMAC payment signature | ✅ |
-| `GET` | `/health` | Service health probe & database connection status | ❌ |
+| `GET` | `/api/system/telemetry` | Real-time distributed cluster telemetry (`p50/p95/p99`, Lamport clocks, circuit breakers, worker pool) | ❌ |
+| `POST` | `/api/system/benchmark` | Trigger a 16-goroutine concurrent stress benchmark across worker pool & Lamport clocks | ❌ |
+| `GET` | `/metrics` | Prometheus-compatible metrics exposition endpoint | ❌ |
+| `GET` | `/health` | Service health probe, active cluster `nodeId`, & database connection status | ❌ |
 
 ### Real-Time WebSocket Protocol (`/ws`)
 

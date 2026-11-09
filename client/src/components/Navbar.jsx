@@ -10,6 +10,7 @@ import axios from 'axios';
 import { ServerUrl } from '../App';
 import { setUserData } from '../redux/userSlice';
 import AuthModel from './AuthModel';
+
 function Navbar() {
     const {userData} = useSelector((state)=>state.user)
     const [showCreditPopup,setShowCreditPopup] = useState(false)
@@ -45,7 +46,16 @@ function Navbar() {
                 <h1 className='font-semibold hidden md:block text-lg'>InterviewIQ.AI</h1>
             </div>
 
-            <div className='flex items-center gap-6  relative'>
+            <div className='flex items-center gap-4 md:gap-6 relative'>
+                <button
+                    onClick={() => navigate("/system")}
+                    className='hidden sm:flex items-center gap-2 bg-emerald-50 border border-emerald-200 text-emerald-800 px-3.5 py-1.5 rounded-full text-xs font-semibold hover:bg-emerald-100 transition cursor-pointer'
+                    title='Distributed Cluster Telemetry & System Design'
+                >
+                    <span className='w-2 h-2 rounded-full bg-emerald-500 animate-pulse' />
+                    Cluster Telemetry
+                </button>
+
                 <div className='relative'>
                     <button onClick={()=>{
                         if(!userData){
@@ -88,6 +98,7 @@ function Navbar() {
 
                             <button onClick={()=>navigate("/history")} className='w-full text-left text-sm py-2 hover:text-black text-gray-600'>Interview History</button>
                             <button onClick={()=>navigate("/peer")} className='w-full text-left text-sm py-2 hover:text-black text-gray-600'>With a Friend</button>
+                            <button onClick={()=>navigate("/system")} className='w-full text-left text-sm py-2 hover:text-black text-emerald-600 font-medium'>Cluster Telemetry</button>
                             <button onClick={handleLogout} 
                             className='w-full text-left text-sm py-2 flex items-center gap-2 text-red-500'>
                                 <HiOutlineLogout size={16}/>

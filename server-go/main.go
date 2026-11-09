@@ -9,6 +9,7 @@ import (
 
 	"interviewiq/internal/config"
 	"interviewiq/internal/db"
+	"interviewiq/internal/distributed"
 	"interviewiq/internal/handlers"
 	"interviewiq/internal/httpx"
 	"interviewiq/internal/realtime"
@@ -65,7 +66,31 @@ func main() {
 		if !db.Connected() {
 			dbStatus = "connecting_or_database_not_reachable"
 		}
-		_ = json.NewEncoder(w).Encode(map[string]any{"ok": true, "engine": "go", "database": dbStatus})
+		_ = json.NewEncoder(w).Encode(map[string]any{
+			"ok":       true,
+			"engine":   "go",
+			"nodeId":   distributed.Default.NodeID,
+			"region":   distributed.Default.Region,
+			"database": dbStatus,
+		})
+	})
+
+	// Distributed Systems Telemetry, Stress Benchmark & Prometheus Exporter
+	mux.HandleFunc("GET /api/system/telemetry", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(w).Encode(distributed.Default.TelemetrySnapshot(db.Connected()))
+	})
+	mux.HandleFunc("POST /api/system/benchmark", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		bench := distributed.Default.RunStressBenchmark(16)
+		_ = json.NewEncoder(w).Encode(map[string]any{
+			"ok":        true,
+			"benchmark": bench,
+			"telemetry": distributed.Default.TelemetrySnapshot(db.Connected()),
+		})
+	})
+	mux.HandleFunc("GET /metrics", func(w http.ResponseWriter, r *http.Request) {
+		distributed.Default.ServePrometheus(w, db.Connected())
 	})
 
 	if st, err := os.Stat("static"); err == nil && st.IsDir() {
@@ -74,8 +99,8 @@ func main() {
 	}
 
 	addr := ":" + cfg.Port
-	log.Printf("Server running on port %s (Go)", cfg.Port)
-	if err := http.ListenAndServe(addr, httpx.CORS(cfg.ClientURL, mux)); err != nil {
+	log.Printf("Server running on port %s (Go | Node=%s | Region=%s)", cfg.Port, distributed.Default.NodeID, distributed.Default.Region)
+	if err := http.ListenAndServe(addr, httpx.CORS(cfg.ClientURL, distributed.Default.WrapHTTP(mux))); err != nil {
 		log.Fatal(err)
 	}
 }
