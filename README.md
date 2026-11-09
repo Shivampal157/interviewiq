@@ -4,27 +4,32 @@
 
 ### **Production-Grade AI Mock Interview & Real-Time Peer Collaborative Coding Platform**
 
-[![Live Demo](https://img.shields.io/badge/LIVE%20DEMO-interviewiq--tb6d.onrender.com-00C7B7?style=for-the-badge&logo=render&logoColor=white)](https://interviewiq-tb6d.onrender.com)
-[![Go Version](https://img.shields.io/badge/Go-1.23%2B-00ADD8?style=for-the-badge&logo=go&logoColor=white)](https://go.dev/)
+[![Live Demo](https://img.shields.io/badge/LIVE%20DEMO-interviewiq--woad.vercel.app-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://interviewiq-woad.vercel.app)
+[![API Engine](https://img.shields.io/badge/API%20Engine-Go%201.23%2B-00ADD8?style=for-the-badge&logo=go&logoColor=white)](https://interviewiq-tb6d.onrender.com/health)
 [![React Version](https://img.shields.io/badge/React-19.2-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
 [![Tailwind CSS](https://img.shields.io/badge/TailwindCSS-v4-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
-[![MongoDB Atlas](https://img.shields.io/badge/MongoDB-Atlas%20Ready-47A248?style=for-the-badge&logo=mongodb&logoColor=white)](https://www.mongodb.com/atlas)
-[![Docker](https://img.shields.io/badge/Docker-Single--Container-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
+[![MongoDB Atlas](https://img.shields.io/badge/MongoDB-Atlas%20Cloud-47A248?style=for-the-badge&logo=mongodb&logoColor=white)](https://www.mongodb.com/atlas)
+[![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
 [![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
 
 <br/>
 
-**[🌐 Launch Live Application](https://interviewiq-tb6d.onrender.com)** • **[📸 Product Showcase](#-product-showcase)** • **[🚀 Key Capabilities](#-key-capabilities)** • **[🏛 System Architecture](#-system-architecture)** • **[⚡ Quick Start](#-quick-start)** • **[📡 API Specs](#-api--websocket-reference)**
+### **[🌐 Launch Live Application (Vercel Edge CDN)](https://interviewiq-woad.vercel.app)**
+*⚡ Instant 0.1s load time • Zero cold start • Globally distributed on Vercel Edge Network*
 
 <br/>
 
-<a href="https://interviewiq-tb6d.onrender.com">
+**[📸 Product Showcase](#-product-showcase)** • **[🚀 Key Capabilities](#-key-capabilities)** • **[🏛 System Architecture](#-system-architecture)** • **[⚡ Quick Start](#-quick-start)** • **[📡 API Specs](#-api--websocket-reference)**
+
+<br/>
+
+<a href="https://interviewiq-woad.vercel.app">
   <img src="docs/screenshots/hero-landing.png" alt="InterviewIQ Landing Page" width="100%" style="border-radius: 12px; box-shadow: 0 12px 35px rgba(0,0,0,0.18);" />
 </a>
 
 <br/>
 
-**InterviewIQ** is an end-to-end, FAANG-caliber interview readiness suite. It combines intelligent, dynamic LLM-driven mock interviews with live anti-cheat camera proctoring, multi-modal answer inputs (speech-to-text / text), real-time peer collaborative coding with WebRTC video, and comprehensive performance scorecards.
+**InterviewIQ** is an end-to-end, FAANG-caliber interview readiness platform. It pairs intelligent, dynamic LLM-driven mock interviews with live anti-cheat camera proctoring, multi-modal answer inputs (speech-to-text / text), real-time peer collaborative coding with WebRTC video, and comprehensive performance scorecards.
 
 </div>
 
@@ -81,15 +86,16 @@
 
 ### ⚡ 3. Ultra-Fast Go Backend Architecture
 - **Sub-Millisecond Response Times**: Native Go standard library HTTP routing with lightweight concurrency primitives (`goroutines` + channels).
-- **Hardened Authentication**: Stateless JWT session tokens securely delivered via `HttpOnly`, `SameSite=Lax`, and SSL-enforced cookies.
+- **Hardened Authentication**: Stateless JWT session tokens securely delivered via `HttpOnly`, `SameSite=None`, and SSL-enforced cookies for seamless cross-origin support.
 - **Resilient MongoDB Driver**: Auto-reconnecting connection pool with non-blocking graceful fallback.
 
 ### 💳 4. Flexible Credits & Monetization
 - **Tier-Based Credit System**: Basic and Pro interview preparation bundles.
 - **Razorpay Checkout Integration**: End-to-end automated payment ordering, client SDK integration, and cryptographically verified HMAC-SHA256 webhooks.
 
-### 📦 5. Unified Single-Container Production Build
-- Multi-stage Docker container serving both the built React SPA and high-throughput Go API from a single port (`8000`), completely eliminating cross-origin cookie and CORS issues across Safari, Brave, and Chrome.
+### 📦 5. High-Performance Hybrid Cloud Architecture
+- **Frontend on Vercel**: Hosted globally on Vercel Edge CDN for instant sub-second rendering, zero cold starts, and seamless client routing.
+- **Backend on Render / Docker**: High-throughput Go API engine with WebSockets, sandbox runners, and MongoDB Atlas persistence.
 
 ---
 
@@ -97,23 +103,24 @@
 
 ```mermaid
 graph TD
-    User["Candidate / Peer Browser"] -->|HTTPS / WSS| Ingress["Production Single-Container (Port 8000)"]
+    User["Candidate / Peer Browser"] -->|HTTPS / Edge CDN| Vercel["Vercel Edge Network (interviewiq-woad.vercel.app)"]
+    Vercel -->|React 19 SPA| BrowserUI["Client Browser UI"]
     
-    subgraph "InterviewIQ Container"
-        Ingress -->|Static Routes /*| SPAServer["Go Static SPA Handler (React Dist)"]
-        Ingress -->|/api/*| APIRoutes["Go REST API Gateway"]
-        Ingress -->|/ws| WSHub["Goroutine WebSocket Hub"]
-        
-        APIRoutes --> AuthModule["JWT / Google OAuth"]
-        APIRoutes --> SandboxRunner["In-Container Sandbox Runner (Node / Python / Remote Compilers)"]
+    BrowserUI -->|REST API / HTTPS| GoAPI["Go API Server (Render Port 8000)"]
+    BrowserUI -->|WebSockets / WSS| WSHub["Goroutine WebSocket Hub"]
+    
+    subgraph "Go Backend Engine"
+        GoAPI --> AuthModule["JWT / Google OAuth"]
+        GoAPI --> SandboxRunner["In-Container Sandbox Runner (Node / Python / Remote Compilers)"]
+        WSHub --> RoomBroadcast["Peer State Sync & Anti-Cheat Hub"]
     end
     
     subgraph "External Cloud Services"
-        APIRoutes -->|Prompts & Evaluation| OpenRouter["OpenRouter AI (LLM Engine)"]
-        APIRoutes -->|Data Persistence| MongoCluster[("MongoDB Atlas Database")]
-        APIRoutes -->|Payment Validation| Razorpay["Razorpay Gateway"]
-        User <-->|P2P Audio / Video| WebRTC["WebRTC Mesh Connection"]
-        User -->|OAuth Sign-In| Firebase["Firebase Google Auth"]
+        GoAPI -->|Prompts & Evaluation| OpenRouter["OpenRouter AI (LLM Engine)"]
+        GoAPI -->|Data Persistence| MongoCluster[("MongoDB Atlas Database")]
+        GoAPI -->|Payment Validation| Razorpay["Razorpay Gateway"]
+        BrowserUI <-->|P2P Audio / Video| WebRTC["WebRTC Mesh Connection"]
+        BrowserUI -->|OAuth Sign-In| Firebase["Firebase Google Auth"]
     end
 ```
 
@@ -123,7 +130,8 @@ graph TD
 
 | Domain | Technology | Description |
 |---|---|---|
-| **Live Production** | [Render](https://render.com) | Unified Docker web service (`https://interviewiq-tb6d.onrender.com`) |
+| **Live Frontend** | [Vercel](https://vercel.com) | Edge CDN deployment: **`https://interviewiq-woad.vercel.app`** (0s Cold Start) |
+| **Backend API Engine** | [Render](https://render.com) / Go | High-throughput Go REST & WebSocket engine (`https://interviewiq-tb6d.onrender.com`) |
 | **Frontend Framework** | React 19 (Vite) | High-speed component rendering, modern hooks, zero-lag UI |
 | **Styling** | TailwindCSS v4 | Modern responsive glassmorphism and theme engine |
 | **State Management** | Redux Toolkit | Predictable centralized application state |
@@ -155,6 +163,7 @@ graph TD
 │   │   │   └── Pricing.jsx     # Subscription & interview credit plans
 │   │   └── utils/              # Firebase configuration, API clients, helpers
 │   ├── package.json
+│   ├── vercel.json             # Vercel SPA rewrite configuration
 │   └── vite.config.js
 │
 ├── server-go/                  # High-Performance Go Backend Engine
@@ -174,6 +183,7 @@ graph TD
 ├── Dockerfile                  # Production multi-stage build (Client + Go API)
 ├── docker-compose.yml          # Local containerized MongoDB service
 ├── render.yaml                 # One-click Render Blueprint definition
+├── vercel.json                 # Root Vercel deployment definition
 ├── railway.json                # 1-Click Railway deployment configuration
 ├── start.ps1                   # One-click development bootstrap script
 └── README.md
@@ -253,20 +263,18 @@ Frontend will be running at **`http://localhost:5173`**.
 
 ## 🌐 Production Deployment
 
-### Live Deployment on Render (Current Production)
+### Frontend (Vercel Edge Network)
+The production web frontend is hosted on Vercel:  
+👉 **`https://interviewiq-woad.vercel.app`**
 
-The application is deployed and live at:  
+### Backend API (Render Docker Container)
+The Go backend engine is hosted on Render:  
 👉 **`https://interviewiq-tb6d.onrender.com`**
 
-To deploy your own instance using the included Blueprint:
-
-1. Navigate to **[dashboard.render.com](https://dashboard.render.com/blueprint/new?repo=https://github.com/Shivampal157/interviewiq)**.
-2. Connect your GitHub repository (`Shivampal157/interviewiq`).
-3. Set your environment variables:
-   - `MONGODB_URL`: Your MongoDB Atlas connection string.
-   - `OPENROUTER_API_KEY`: Your OpenRouter API key.
-4. Click **Deploy Blueprint** — Render will build the unified multi-stage Docker container and go live in ~2 minutes.
-5. In **Firebase Console** -> **Authentication** -> **Settings** -> **Authorized domains**, add your `.onrender.com` domain.
+To configure Google Sign-In for your deployment:
+1. Open the **[Firebase Console](https://console.firebase.google.com/project/interviewiq-3746a/authentication/settings)**.
+2. Under **Authorized domains**, click **Add domain**.
+3. Add **`interviewiq-woad.vercel.app`** and click **Save**.
 
 ---
 
