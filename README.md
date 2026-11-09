@@ -19,7 +19,7 @@
 
 <br/>
 
-**[📸 Product Showcase](#-product-showcase)** • **[🌐 Distributed Systems Engineering](#-distributed-systems-engineering-faang-highlights)** • **[🚀 Key Capabilities](#-key-capabilities)** • **[🏛 System Architecture](#-system-architecture)** • **[⚡ Quick Start](#-quick-start)** • **[📡 API Specs](#-api--websocket-reference)**
+**[📸 Product Showcase](#-product-showcase)** • **[⚡ FAANG Code Judge & Matchmaking](#-distributed-interview--code-judge-engine-faang-highlights)** • **[🚀 Key Capabilities](#-key-capabilities)** • **[🏛 System Architecture](#-system-architecture)** • **[⚡ Quick Start](#-quick-start)** • **[📡 API Specs](#-api--websocket-reference)**
 
 <br/>
 
@@ -92,11 +92,12 @@ InterviewIQ powers its Live Coding & AI Mock Interviews with a high-concurrency 
 - **Granular AI Scoring & Feedback**: Instant category-wise scoring across Problem Solving, Technical Communication, Code Quality, and Behavioral Fit.
 - **Comprehensive PDF Reports**: Export high-resolution graphical interview performance dossiers with radar charts via `jsPDF`.
 
-### 👥 2. Real-Time Collaborative Peer Coding Rooms
-- **Bidirectional WebSocket Sync**: Sub-5ms synchronized typing, state reconciliation, and room presence powered by a custom Go WebSocket Hub.
-- **Live Video & Audio Streaming**: WebRTC peer-to-peer audio/video calling directly in the interview canvas.
-- **Multi-Language Sandbox Code Runner**: Instant server-side compilation & execution for **JavaScript**, **Python**, **Java**, and **C++**.
-- **Anti-Cheat & Proctoring Engine**: Automatic detection and real-time logging of tab switches, window blur events, and full-screen exits.
+### 👥 2. Real-Time Collaborative Peer Coding Rooms (CoderPad + LeetCode Judge)
+- **Instant Peer Auto-Matchmaking**: 1-click **"⚡ Instant Auto-Match"** queue pairs waiting candidates and interviewers into a live coding session automatically (or share a private room invite link).
+- **Built-In FAANG DSA Problem Bank**: Switch between curated FAANG coding problems (*Two Sum*, *Maximum Subarray / Kadane's*, *Valid Parentheses*, etc.) with starter templates in **JavaScript**, **Python**, **Java**, and **C++**.
+- **Parallel Multi-Test-Case Code Judge**: Executes candidate code against sample and hidden test cases concurrently in a bounded Go worker pool, returning **`✅ Accepted` / `❌ Wrong Answer`** verdicts and per-case execution latency (`ms`).
+- **AI Live Code Complexity Copilot**: 1-click **"✨ AI Complexity Check"** evaluates Big-O Time & Space complexity, code quality (`0–10`), and suggests follow-up questions for the interviewer.
+- **Bidirectional WebSocket Sync & WebRTC Video**: Sub-5ms synchronized typing, live test-case verdict broadcasting, P2P audio/video calling, and real-time anti-cheat tab-switch alerts.
 
 ### ⚡ 3. Ultra-Fast Go Backend Architecture
 - **Sub-Millisecond Response Times**: Native Go standard library HTTP routing with lightweight concurrency primitives (`goroutines` + channels).
@@ -123,10 +124,12 @@ graph TD
     BrowserUI -->|REST API / HTTPS| GoAPI["Go API Server (Render Port 8000)"]
     BrowserUI -->|WebSockets / WSS| WSHub["Goroutine WebSocket Hub"]
     
-    subgraph "Go Backend Engine"
-        GoAPI --> AuthModule["JWT / Google OAuth"]
-        GoAPI --> SandboxRunner["In-Container Sandbox Runner (Node / Python / Remote Compilers)"]
-        WSHub --> RoomBroadcast["Peer State Sync & Anti-Cheat Hub"]
+    subgraph "Go Distributed Interview Engine"
+        GoAPI --> AuthModule["JWT / Google OAuth + 16-Shard Rate Limiter"]
+        GoAPI --> Matchmaker["Instant Peer Auto-Matchmaking Queue"]
+        GoAPI --> CodeJudge["Parallel Multi-Test-Case Judge (Bounded Worker Pool)"]
+        GoAPI --> AICopilot["AI Complexity & Follow-Up Question Analyzer"]
+        WSHub --> RoomBroadcast["Real-Time Code Pad Sync & Anti-Cheat Hub"]
     end
     
     subgraph "External Cloud Services"
@@ -185,11 +188,12 @@ graph TD
 │   │   ├── auth/               # JWT creation, cookie dispatch, token parsing
 │   │   ├── config/             # Environment configuration loader
 │   │   ├── db/                 # Resilient MongoDB Atlas connection & auto-retry pool
-│   │   ├── handlers/           # HTTP controllers (Auth, AI, Peer, Payment)
+│   │   ├── distributed/        # Bounded sandbox worker pool, circuit breakers, sharded rate limiter
+│   │   ├── handlers/           # HTTP controllers (Auth, AI Interview, Code Judge, Matchmaking, Payment)
 │   │   ├── httpx/              # HTTP middleware, CORS, JSON context wrappers
 │   │   ├── models/             # Domain entities (User, Interview, Room, Payment)
 │   │   ├── realtime/           # Thread-safe WebSocket room hub & broadcasting
-│   │   └── services/           # AI extraction, Razorpay order/verification, PDF parser
+│   │   └── services/           # AI extraction, multi-language sandbox runner, Razorpay, PDF parser
 │   ├── go.mod
 │   ├── go.sum
 │   └── main.go                 # Server entrypoint & SPA file server
